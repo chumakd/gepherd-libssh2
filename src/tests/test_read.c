@@ -1,6 +1,12 @@
-/* libssh2 test receiving large amounts of data through a channel */
+/* Copyright (C) The libssh2 project and its contributors.
+ *
+ * libssh2 test receiving large amounts of data through a channel
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
 #include "runner.h"
+#include "openssh_fixture.h"
 
 #include <stdlib.h>  /* for getenv() */
 
@@ -27,10 +33,19 @@ int test(LIBSSH2_SESSION *session)
 
     char remote_command[256];
     const char *env;
+    const char *userauth_list;
 
-    const char *userauth_list =
-        libssh2_userauth_list(session, username,
-                              (unsigned int)strlen(username));
+    /* Ignore our hard-wired Dockerfile user when not running under Docker */
+    if(!openssh_fixture_have_docker()) {
+        username = getenv("USER");
+#ifdef _WIN32
+        if(!username)
+            username = getenv("USERNAME");
+#endif
+    }
+
+    userauth_list = libssh2_userauth_list(session, username,
+                                          (unsigned int)strlen(username));
     if(!userauth_list) {
         print_last_session_error("libssh2_userauth_list");
         return 1;
@@ -81,7 +96,7 @@ int test(LIBSSH2_SESSION *session)
         char buf[1024];
         ssize_t err = libssh2_channel_read(channel, buf, sizeof(buf));
         if(err < 0)
-            fprintf(stderr, "Unable to read response: %d\n", (int)err);
+            fprintf(stderr, "Unable to read response: %ld\n", (long)err);
         else {
             unsigned int i;
             for(i = 0; i < (unsigned long)err; ++i) {

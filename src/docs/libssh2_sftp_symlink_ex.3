@@ -1,3 +1,5 @@
+.\" Copyright (C) The libssh2 project and its contributors.
+.\" SPDX-License-Identifier: BSD-3-Clause
 .TH libssh2_sftp_symlink_ex 3 "1 Jun 2007" "libssh2 0.15" "libssh2"
 .SH NAME
 libssh2_sftp_symlink_ex - read or set a symbolic link
@@ -66,7 +68,7 @@ Passing in a too small buffer when receiving data only results in libssh2
 1.2.7 or earlier to not copy the entire data amount, and it is not possible
 for the application to tell when it happens!
 .SH ERRORS
-\fILIBSSH2_ERROR_ALLOC\fP -  An internal memory allocation call failed.
+\fILIBSSH2_ERROR_ALLOC\fP - An internal memory allocation call failed.
 
 \fILIBSSH2_ERROR_SOCKET_SEND\fP - Unable to send data on socket.
 

@@ -1,4 +1,6 @@
 #!/bin/sh
+# Copyright (C) The libssh2 project and its contributors.
+# SPDX-License-Identifier: BSD-3-Clause
 
 set -e
 set -u
@@ -23,7 +25,7 @@ ec=0
 if command -v grep >/dev/null 2>&1 && \
    man --help 2>/dev/null | grep -q warnings; then
 
-  trap 'rm -f "$dstdir/man3"' EXIT
+  trap 'rm -f "$dstdir/man3"' EXIT HUP INT TERM
 
   ln -sf "$mandir" "$dstdir/man3"
 

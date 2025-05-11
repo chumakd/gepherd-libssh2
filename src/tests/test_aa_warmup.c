@@ -1,3 +1,8 @@
+/* Copyright (C) Viktor Szakats
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 /* Warm-up test. Always return success.
    Workaround for CI/docker/etc flakiness on the first run. */
 
@@ -12,8 +17,8 @@ int test(LIBSSH2_SESSION *session)
     (void)hostkey;
 
     fprintf(stdout,
-            "libssh2_session_hostkey returned len, type: %d, %d\n",
-            (int)len, type);
+            "libssh2_session_hostkey returned len, type: %ld, %d\n",
+            (long)len, type);
 
     return 0;  /* always return success */
 }

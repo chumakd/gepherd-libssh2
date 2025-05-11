@@ -1,4 +1,4 @@
-/* Copyright (C) 2016 Alexander Lamaison
+/* Copyright (C) Alexander Lamaison
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms,
@@ -33,6 +33,8 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include "runner.h"
@@ -69,7 +71,7 @@ int main(void)
            ++retry > retries) {
             break;
         }
-        fprintf(stderr, "Test failed (%d)! Retrying... %d / %d\n",
+        fprintf(stderr, "Test failed (%d). Retrying... %d / %d\n",
                         rc, retry, retries);
     } while(1);
 

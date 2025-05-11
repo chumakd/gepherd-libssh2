@@ -1,4 +1,4 @@
-/* Copyright (C) 2022 Xaver Loppenstedt
+/* Copyright (C) Xaver Loppenstedt
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms,
@@ -33,6 +33,8 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include "libssh2_priv.h"
@@ -50,7 +52,7 @@ struct expected {
 };
 struct test_case {
     const char *data;
-    int data_len;
+    unsigned int data_len;
     struct expected expected;
 };
 
@@ -246,7 +248,7 @@ LIBSSH2_FREE_FUNC(test_free)
 
 static
 int test_case(int num,
-              const char *data, int data_len, void *abstract,
+              const char *data, unsigned int data_len, void *abstract,
               struct expected expected)
 {
     int rc;

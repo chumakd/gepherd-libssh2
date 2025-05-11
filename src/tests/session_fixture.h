@@ -1,4 +1,4 @@
-/* Copyright (C) 2016 Alexander Lamaison
+/* Copyright (C) Alexander Lamaison
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms,
@@ -33,6 +33,8 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef LIBSSH2_TESTS_SESSION_FIXTURE_H
@@ -45,7 +47,7 @@
 LIBSSH2_SESSION *start_session_fixture(int *skipped, int *err);
 void stop_session_fixture(void);
 void print_last_session_error(const char *function);
-const char *srcdir_path(const char *file);
+char *srcdir_path(const char *file);
 
 #define TEST_AUTH_SHOULDFAIL  1
 #define TEST_AUTH_FROMMEM     2

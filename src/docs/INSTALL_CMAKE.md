@@ -6,7 +6,7 @@ Web site source code: https://github.com/libssh2/www
 
 Installation instructions are in docs/INSTALL
 =======
-To build libssh2 you will need CMake v3.1 or later [1] and one of the
+To build libssh2 you will need CMake v3.7 or later [1] and one of the
 following cryptography libraries:
 
 * OpenSSL
@@ -22,8 +22,14 @@ If you are happy with the default options, make a new build directory,
 change to it, configure the build environment and build the project:
 
 ```
-  mkdir bin
-  cd bin
+  cmake -B bld
+  cmake --build bld
+```
+
+Use this with CMake 3.12.x or older:
+```
+  mkdir bld
+  cd bld
   cmake ..
   cmake --build .
 ```
@@ -45,42 +51,44 @@ The following options are available:
 
  * `LINT=ON`
 
-    Enables running the source code linter when building. Can be `ON` or `OFF`.
+    Enables running the source code linter when building.
+    Can be `ON` or `OFF`. Default: `OFF`
 
- * `BUILD_STATIC_LIBS=ON`
+ * `BUILD_STATIC_LIBS=OFF`
 
     Determines whether to build a libssh2 static library.
-    Can be `ON` or `OFF`.
+    Can be `ON` or `OFF`. Default: `ON`
 
  * `BUILD_SHARED_LIBS=OFF`
 
     Determines whether to build a libssh2 shared library (.dll/.so).
-    Can be `ON` or `OFF`.
-
-    If enabled, the optional static lib is also built with PIC enabled.
+    Can be `ON` or `OFF`. Default: `ON`
 
  * `CRYPTO_BACKEND=`
 
     Chooses a specific cryptography library to use for cryptographic
-    operations.  Can be `OpenSSL` (https://www.openssl.org),
+    operations.  Can be `OpenSSL` (https://www.openssl-library.org/),
     `Libgcrypt` (https://www.gnupg.org/), `WinCNG` (Windows Vista+),
-    `mbedTLS` (https://tls.mbed.org/) or blank to use any library available.
+    `mbedTLS` (https://www.trustedfirmware.org/projects/mbed-tls/) or
+    blank to use any library available.
 
     CMake will attempt to locate the libraries automatically.  See [2]
     for more information.
 
- * `ENABLE_ZLIB_COMPRESSION=OFF`
+ * `ENABLE_ZLIB_COMPRESSION=ON`
 
-    Will use zlib (https://zlib.net/) for payload compression.  Can
-    be `ON` or `OFF`.
+    Use zlib (https://zlib.net/) for payload compression.
+    Can be `ON` or `OFF`. Default: `OFF`
 
- * `ENABLE_DEBUG_LOGGING=ON` in Debug, `=OFF` in Release
+ * `ENABLE_DEBUG_LOGGING=ON`
 
-    Will enable the libssh2_trace() function for showing debug traces.
+    Enable the libssh2_trace() function for showing debug traces.
+    Can be `ON` or `OFF`. Default: `OFF` in Release, `ON` in `Debug`
 
- * `CLEAR_MEMORY=ON`
+ * `CLEAR_MEMORY=OFF`
 
-    Securely zero memory before freeing it (if the backend supports this).
+    Disable secure zero memory before freeing it (not recommended).
+    Can be `ON` or `OFF`. Default: `ON`
 
 Build tools
 -----------
@@ -134,8 +142,8 @@ setting it up with libssh2's location. Add the following lines and
 CMake will find libssh2 on your system, set up the necessary paths and
 link the library with your binary.
 
-    find_package(Libssh2 REQUIRED CONFIG)
-    target_link_libraries(my_project_target Libssh2::libssh2)
+    find_package(libssh2 REQUIRED CONFIG)
+    target_link_libraries(my_project_target libssh2::libssh2)
 
 You still have to make libssh2 available on your system first.  You can
 install it in the traditional way shown above, but you do not have to.
@@ -149,13 +157,13 @@ builds your project:
     include(ExternalProject)
 
     ExternalProject_Add(
-        Libssh2
+        libssh2
         URL <libssh2 download location>
-        URL_HASH SHA1=<libssh2 archive SHA1>
+        URL_HASH SHA256=<libssh2 archive SHA256>
         INSTALL_COMMAND "")
 
     ExternalProject_Add(
-        MyProject DEPENDS Libssh2
+        MyProject DEPENDS libssh2
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src
         INSTALL_COMMAND "")
 

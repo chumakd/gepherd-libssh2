@@ -1,5 +1,5 @@
-/* Copyright (C) 2007 The Written Word, Inc.
- * Copyright (C) 2008, 2010 Simon Josefsson
+/* Copyright (C) The Written Word, Inc.
+ * Copyright (C) Simon Josefsson
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms,
@@ -34,6 +34,8 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include "libssh2_priv.h"

@@ -1,3 +1,8 @@
+/* Copyright (C) The libssh2 project and its contributors.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #include "runner.h"
 
 static const char *EXPECTED_RSA_HOSTKEY =

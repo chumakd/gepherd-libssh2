@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-
-# Written by Simon Josefsson and Viktor Szakats
-
+# Copyright (C) Simon Josefsson
+# Copyright (C) Viktor Szakats
+# SPDX-License-Identifier: BSD-3-Clause
+#
 # Start sshd, invoke test(s), saving exit code, kill sshd, and
 # return exit code.
 
@@ -45,7 +46,7 @@ fi
 d="$(cd "${d}" || exit; pwd)"  # sshd needs absolute paths
 
 SSHD="${SSHD:-/usr/sbin/sshd}"
-[[ "${uname}" = *'_NT'* ]] && SSHD="$(cygpath -u "${SSHD}")"
+[[ "${uname}" = *'_NT'* ]] && SSHD="$(cygpath "${SSHD}")"
 ver="$("${SSHD}" -V 2>&1 || true)"
 if [[ "${ver}" =~ OpenSSH_[a-zA-Z0-9_\ .,]+ ]]; then
   ver="${BASH_REMATCH[0]}"
@@ -59,9 +60,16 @@ echo "# sshd executable: '${SSHD}' (${ver})"
 [ -z "${PUBKEY:-}" ]  && export PUBKEY="${d}/key_rsa.pub"
 cakeys="${d}/openssh_server/ca_user_keys.pub"
 
+logfsrv="$(mktemp)"; readonly logfsrv
+logfcli="$(mktemp)"; readonly logfcli
+
+echo "# sshd log: '${logfsrv}'"
+
 SSHD_FLAGS="${SSHD_FLAGS:-}"
 if [ -n "${DEBUG:-}" ]; then
   SSHD_FLAGS+=' -d -d'
+else
+  SSHD_FLAGS+=" -E ${logfsrv}"
 fi
 
 chmod go-rwx \
@@ -72,9 +80,11 @@ chmod go-rwx \
 "${SSHD}" \
   -f "${SSHD_FIXTURE_CONFIG:-${d}/openssh_server/sshd_config}" \
   -o 'Port 4711' \
+  -o 'StrictModes no' \
   -h "${d}/openssh_server/ssh_host_rsa_key" \
   -h "${d}/openssh_server/ssh_host_ecdsa_key" \
   -h "${d}/openssh_server/ssh_host_ed25519_key" \
+  -o 'PidFile sshd.pid' \
   -o "AuthorizedKeysFile ${PUBKEY} ${d}/openssh_server/authorized_keys" \
   -o "TrustedUserCAKeys ${cakeys}" \
   -o 'PermitRootLogin yes' \
@@ -82,13 +92,14 @@ chmod go-rwx \
   ${SSHD_FLAGS} &
 sshdpid=$!
 
-trap 'kill "${sshdpid}"; echo "# signal killing sshd"; exit 1;' EXIT
+trap 'kill "${sshdpid}"; echo "# signal killing sshd"; exit 1;' EXIT HUP INT TERM
 
 : "started sshd (${sshdpid})"
 
 SSH="$(command -v "${SSH:-ssh}" || true)"
 if [ -n "${SSH}" ]; then
   echo "# ssh executable: '${SSH}' ($("${SSH}" -V 2>&1 || true))"
+  echo "# ssh log: '${logfcli}'"
   chmod go-rwx "${PRIVKEY}"
   if [[ "${uname}" = *'_NT'* ]]; then
     export MSYS2_ARG_CONV_EXCL='/reset'
@@ -105,14 +116,21 @@ if [ -n "${SSH}" ]; then
       -o 'UserKnownHostsFile /dev/null' \
       -o 'ConnectTimeout 3' \
       -i "${PRIVKEY}" \
-      -p 4711 ${SSH_FLAGS:-} localhost exit 2>/dev/null; do
-    echo '# waiting for sshd...'
+      -p 4711 ${SSH_FLAGS:-} localhost exit 2>>"${logfcli}"; do
     ((count++))
-    [[ "${count}" -gt 8 ]] && break
+    if [[ "${count}" -gt 8 ]]; then
+      echo '# giving up waiting for sshd. Tests are expected to fail.'
+      echo '# sshd log:'
+      sed 's/^/#  /' < "${logfsrv}"
+      echo '# ssh test connect log:'
+      sed 's/^/#  /' < "${logfcli}"
+      break
+    fi
+    echo '# waiting for sshd...'
     sleep 1
   done
 else
-  echo '# waiting for sshd...'
+  echo '# giving time for sshd to launch...'
   sleep 5
 fi
 
@@ -131,8 +149,9 @@ for test in ${tests}; do
   if "${test}"; then
     res='ok'
   else
+    testerr=$?
     anyerror=1
-    [ "${via_args}" = '1' ] && [ "${total}" = '1' ] && ec=$?
+    [ "${via_args}" = '1' ] && [ "${total}" = '1' ] && ec="${testerr}"
     res='not ok'
   fi
   echo "${res} ${count} - sshd-$(basename "${test}")"
@@ -143,7 +162,7 @@ done
 
 : "killing sshd (${sshdpid})"
 kill "${sshdpid}" > /dev/null 2>&1
-trap '' EXIT
+trap '' EXIT HUP INT TERM
 
 [ "${via_args}" = '1' ] && [ "${total}" != '1' ] && ec="${anyerror}"
 

@@ -1,4 +1,9 @@
-/* Self test, based on example/ssh2.c. */
+/* Copyright (C) The libssh2 project and its contributors.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Self test, based on example/ssh2.c.
+ */
 
 #include "libssh2_setup.h"
 #include <libssh2.h>
@@ -20,7 +25,7 @@
 #include <stdlib.h>  /* for getenv() */
 
 static const char *hostname = "127.0.0.1";
-static const unsigned short port_number = 4711;
+static const int port_number = 4711;
 static const char *pubkey = "key_rsa.pub";
 static const char *privkey = "key_rsa";
 static const char *username = "username";
@@ -28,7 +33,7 @@ static const char *password = "password";
 
 static void portable_sleep(unsigned int seconds)
 {
-#ifdef WIN32
+#ifdef _WIN32
     Sleep(seconds);
 #else
     sleep(seconds);
@@ -46,9 +51,9 @@ int main(int argc, char *argv[])
     int rc;
     LIBSSH2_SESSION *session = NULL;
     LIBSSH2_CHANNEL *channel;
-    int counter;
+    unsigned int counter;
 
-#ifdef WIN32
+#ifdef _WIN32
     WSADATA wsadata;
 
     rc = WSAStartup(MAKEWORD(2, 0), &wsadata);
@@ -61,12 +66,16 @@ int main(int argc, char *argv[])
     (void)argc;
     (void)argv;
 
+    #ifdef _WIN32
+    #define LIBSSH2_FALLBACK_USER_ENV "USERNAME"
+    #else
+    #define LIBSSH2_FALLBACK_USER_ENV "LOGNAME"
+    #endif
+
     if(getenv("USER"))
         username = getenv("USER");
-#ifdef WIN32
-    else if(getenv("USERNAME"))
-        username = getenv("USERNAME");
-#endif
+    else if(getenv(LIBSSH2_FALLBACK_USER_ENV))
+        username = getenv(LIBSSH2_FALLBACK_USER_ENV);
 
     if(getenv("PRIVKEY"))
         privkey = getenv("PRIVKEY");
@@ -90,12 +99,12 @@ int main(int argc, char *argv[])
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if(sock == LIBSSH2_INVALID_SOCKET) {
-        fprintf(stderr, "failed to create socket!\n");
+        fprintf(stderr, "failed to create socket.\n");
         goto shutdown;
     }
 
     sin.sin_family = AF_INET;
-    sin.sin_port = htons(port_number);
+    sin.sin_port = htons((unsigned short)port_number);
     sin.sin_addr.s_addr = hostaddr;
 
     for(counter = 0; counter < 3; ++counter) {
@@ -121,7 +130,7 @@ int main(int argc, char *argv[])
      */
     session = libssh2_session_init();
     if(!session) {
-        fprintf(stderr, "Could not initialize SSH session!\n");
+        fprintf(stderr, "Could not initialize SSH session.\n");
         goto shutdown;
     }
 
@@ -191,7 +200,7 @@ int main(int argc, char *argv[])
             if(libssh2_userauth_publickey_fromfile(session, username,
                                                    pubkey, privkey,
                                                    password)) {
-                fprintf(stderr, "Authentication by public key failed!\n");
+                fprintf(stderr, "Authentication by public key failed.\n");
                 goto shutdown;
             }
             else {
@@ -199,7 +208,7 @@ int main(int argc, char *argv[])
             }
         }
         else {
-            fprintf(stderr, "No supported authentication methods found!\n");
+            fprintf(stderr, "No supported authentication methods found.\n");
             goto shutdown;
         }
     }
@@ -249,7 +258,7 @@ shutdown:
 
     if(sock != LIBSSH2_INVALID_SOCKET) {
         shutdown(sock, 2 /* SHUT_RDWR */);
-#ifdef WIN32
+#ifdef _WIN32
         closesocket(sock);
 #else
         close(sock);
@@ -259,6 +268,10 @@ shutdown:
     fprintf(stderr, "all done\n");
 
     libssh2_exit();
+
+#ifdef _WIN32
+    WSACleanup();
+#endif
 
     return rc;
 }
