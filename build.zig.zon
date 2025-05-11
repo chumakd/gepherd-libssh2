@@ -37,20 +37,15 @@
     // internet connectivity.
     .dependencies = .{
         .libssh2 = .{
-            .url = "https://github.com/libssh2/libssh2/archive/refs/tags/libssh2-1.11.0.tar.gz",
-            .hash = "1220a0863be6190270168974107d04653087aacc89e72cd81914789cb7d84b744fda",
+            .path = "src",
         },
         .mbedtls = .{
-            .url = "git+https://github.com/allyourcodebase/mbedtls.git#e4da72f6a8bedc883e34953514a3b62cbbd4f251",
-            .hash = "1220ffeef9740c79b6f62f6bf350f12a7b14768acf548cb47cd56c5ca58a15af7970",
+            .path = "../mbedtls",
         },
     },
     .paths = .{
         "build.zig",
         "build.zig.zon",
         "src",
-        // For example...
-        //"LICENSE",
-        //"README.md",
     },
 }
